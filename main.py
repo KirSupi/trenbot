@@ -1,18 +1,28 @@
-import os
-
+# import tdlib
 from telegram import InlineKeyboardButton, \
     InlineKeyboardMarkup
 from telegram.ext import CallbackQueryHandler
 from telegram.ext import CommandHandler
 from telegram.ext import Updater, MessageHandler, Filters, ConversationHandler
-from PIL import Image
 
+from data import db_session
+
+db_session.global_init("db/users.sqlite")
 TOKEN = "1124731420:AAGQa5H0sNRbumQJI2pqNJmtpct97Hhcgn8"
 
 OTHER_BODY, QUESTIONNAIRE_2, QUESTIONNAIRE_3, QUESTIONNAIRE_4, \
 QUESTIONNAIRE_5, QUESTIONNAIRE_END, OTHER_BODY_QUESTION = range(
     7)
+CALLBACK_BUTTON_1_MONTH = "CALLBACK_BUTTON_1_MONTH"
+CALLBACK_BUTTON_3_MONTH = "CALLBACK_BUTTON_3_MONTH"
+CALLBACK_BUTTON_1_YEAR = "CALLBACK_BUTTON_1_YEAR"
 
+CALLBACK_BUTTON_NUMBER_OF_REFERRALS = "CALLBACK_BUTTON_NUMBER_OF_REFERRALS"
+CALLBACK_BUTTON_BONUS_PACKAGE = "CALLBACK_BUTTON_BONUS_PACKAGE"
+CALLBACK_BUTTON_CANCEL = "CALLBACK_BUTTON_CANCEL"
+CALLBACK_BUTTON_PAYMENT = "CALLBACK_BUTTON_PAYMENT"
+CALLBACK_BUTTON_BONUS = "CALLBACK_BUTTON_BONUS"
+CALLBACK_BUTTON_FEEDBACK = "CALLBACK_BUTTON_FEEDBACK"
 CALLBACK_BUTTON_GAIN_WEIGHT = "CALLBACK_BUTTON_GAIN_WEIGHT"
 CALLBACK_BUTTON_LOSE_WEIGHT = "CALLBACK_BUTTON_LOSE_WEIGHT"
 CALLBACK_BUTTON_I_WANT = "CALLBACK_BUTTON_I_WANT"
@@ -20,12 +30,59 @@ CALLBACK_BUTTON_I_DONT_WANT = "CALLBACK_BUTTON_I_DONT_WANT"
 CALLBACK_BUTTON_NEXT = "CALLBACK_BUTTON_NEXT"
 
 TITLES = {
+    CALLBACK_BUTTON_CANCEL: "Назад ↩",
+    CALLBACK_BUTTON_1_MONTH: "1 месяц",
+    CALLBACK_BUTTON_3_MONTH: "3 месяца",
+    CALLBACK_BUTTON_1_YEAR: "1 год",
+    CALLBACK_BUTTON_NUMBER_OF_REFERRALS: "Кол-во рефералов",
+    CALLBACK_BUTTON_BONUS_PACKAGE: "Размер бонуса",
+    CALLBACK_BUTTON_FEEDBACK: "Обратная связь",
+    CALLBACK_BUTTON_BONUS: "Бонусы(реферальная система)",
+    CALLBACK_BUTTON_PAYMENT: "Оплата подписки на тренировки",
     CALLBACK_BUTTON_NEXT: "Далее➡️",
     CALLBACK_BUTTON_GAIN_WEIGHT: "🏋️‍Накачаться",
     CALLBACK_BUTTON_LOSE_WEIGHT: "🤸Похудеть",
     CALLBACK_BUTTON_I_WANT: "Да, хочу",
     CALLBACK_BUTTON_I_DONT_WANT: "Нет, не хочу"
 }
+
+BONUS = 1
+def get_cancel_inline_keyboard():
+    keyboard = [[InlineKeyboardButton(TITLES[CALLBACK_BUTTON_CANCEL], callback_data=CALLBACK_BUTTON_CANCEL)]]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def get_FEEDBACK_inline_keyboard():
+    keyboard = [[InlineKeyboardButton(TITLES[CALLBACK_BUTTON_CANCEL], callback_data=CALLBACK_BUTTON_CANCEL)]]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def get_PAYMENT_inline_keyboard():
+    keyboard = [[InlineKeyboardButton(TITLES[CALLBACK_BUTTON_1_MONTH], callback_data=CALLBACK_BUTTON_1_MONTH), ],
+                [InlineKeyboardButton(TITLES[CALLBACK_BUTTON_3_MONTH], callback_data=CALLBACK_BUTTON_3_MONTH), ],
+                [InlineKeyboardButton(TITLES[CALLBACK_BUTTON_1_YEAR], callback_data=CALLBACK_BUTTON_1_YEAR), ],
+                [InlineKeyboardButton(TITLES[CALLBACK_BUTTON_CANCEL], callback_data=CALLBACK_BUTTON_CANCEL)],
+                ]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def get_BONUS_inline_keyboard():
+    keyboard = [[InlineKeyboardButton(TITLES[CALLBACK_BUTTON_NUMBER_OF_REFERRALS],
+                                      callback_data=CALLBACK_BUTTON_NUMBER_OF_REFERRALS), ],
+                [InlineKeyboardButton(TITLES[CALLBACK_BUTTON_BONUS_PACKAGE],
+                                      callback_data=CALLBACK_BUTTON_BONUS_PACKAGE), ],
+                [InlineKeyboardButton(TITLES[CALLBACK_BUTTON_CANCEL], callback_data=CALLBACK_BUTTON_CANCEL)],
+                ]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def get_main_menu_inline_keyboard():
+    keyboard = [[InlineKeyboardButton(TITLES[CALLBACK_BUTTON_PAYMENT], callback_data=CALLBACK_BUTTON_PAYMENT),
+                 InlineKeyboardButton(TITLES[CALLBACK_BUTTON_BONUS], callback_data=CALLBACK_BUTTON_BONUS),
+                 InlineKeyboardButton(TITLES[CALLBACK_BUTTON_FEEDBACK], callback_data=CALLBACK_BUTTON_FEEDBACK),
+                 ]
+                ]
+    return InlineKeyboardMarkup(keyboard)
 
 
 def get_next_inline_keyboard():
@@ -134,6 +191,8 @@ def end_of_questionnaire(update, context):
     except (IndexError, ValueError):
         update.message.reply_text('Использование: /set_timer <секунд>')
 
+    return ConversationHandler.END
+
 
 def task(context):
     job = context.job
@@ -141,12 +200,26 @@ def task(context):
     context.bot.send_message(job.context, text='❗️Пора начинать добиваться цели, буквально через неделю ты увидишь'
                                                ' отличные результаты, смотри видео ниже'
                                                ' и забирай первую бесплатную тренировку ПРЯМО СЕЙЧАС❗️')
-    context.bot.send_message(job.context, text='+видео с предлогом начать первую бесплатную тренировку')
+    welcome_text = "Меню бота"
+    context.bot.send_message(job.context, text=welcome_text, reply_markup=get_main_menu_inline_keyboard())
+    # context.bot.send_message(job.context, text='+видео с предлогом начать первую бесплатную тренировку')
+    videos_group = "-368870653"
+    main_chat = "419453249"
+    # print(update.effective_message.message_id)
+    # print(update.effective_message.chat_id)
+    print(dir(context.chat_data))
+    print(dir(context.user_data))
+    print(dir(context.bot), "!@!@@!@")
+    print(context.bot.last_name)
+    print(context.bot.id)
+    # update.effective_message.reply_text(text=update.effective_message.message_id)
+    # context.bot.forward_message(context.bot.chat_id, videos_group, 602)
+    return ConversationHandler.END
 
 
 def key_button_handler(update, context):
-    print("!!!!", dir(context.bot))
-    print("???", dir(update.effective_message.chat_id))
+    # print("!!!!", dir(context.bot))
+    # print("???", dir(update.effective_message.chat_id))
 
     query = update.callback_query
     data = query.data
@@ -155,13 +228,65 @@ def key_button_handler(update, context):
                        " что ты на верном пути и совсем скоро получишь желаемый результат🏃‍♀️"
         context.user_data['kind of training'] = data
         update.effective_message.reply_text(text=context_text)
-        context.bot.send_video(chat_id=update.effective_message.chat_id, video=open("takoe.mp4", 'rb'),
-                               supports_streaming=True)
+        # context.bot.send_video(chat_id=update.effective_message.chat_id, video=open("takoe.mp4", 'rb'),
+        #                        supports_streaming=True)
+        videos_group = "-368870653"
+        main_chat = "419453249"
+        # print(update.effective_message.message_id)
+        # print(update.effective_message.chat_id)
+        # print(dir(context.chat_data))
+        # print(dir(context.user_data))
+        # print(dir(context.bot))
+        # update.effective_message.reply_text(text=update.effective_message.message_id)
+        print("!!!!", update.effective_message.chat_id)
+        context.bot.forward_message(update.effective_message.chat_id, videos_group, 611)
         update.effective_message.reply_text("какие-то видео", reply_markup=get_next_inline_keyboard())
     if data == CALLBACK_BUTTON_NEXT:
-        print("!!!!")
+        # print("!!!!")
         return throw_question_body(update=update, context=context)
         # return OTHER_BODY_QUESTION
+    # CALLBACK_BUTTON_FEEDBACK: "Обратная связь",
+    # CALLBACK_BUTTON_BONUS: "Бонусы(реферальная система)",
+    # CALLBACK_BUTTON_PAYMENT: "Оплата подписки на тренировки",
+    if data == CALLBACK_BUTTON_FEEDBACK:
+        # update.effective_message.reply_text("Обратная связь, и тут что-то должно быть....", reply_markup=get_cancel_inline_keyboard())
+        context.bot.edit_message_text(chat_id=update.effective_message.chat_id,
+                                      message_id=update.effective_message.message_id,
+                                      text="Обратная связь.......", reply_markup=get_FEEDBACK_inline_keyboard())
+    if data == CALLBACK_BUTTON_BONUS:
+        context.bot.edit_message_text(chat_id=update.effective_message.chat_id,
+                                      message_id=update.effective_message.message_id,
+                                      text="Бонусы(реферальная система)", reply_markup=get_BONUS_inline_keyboard())
+        # return BONUS
+        # update.effective_message.reply_text("Бонусы(реферальная система)", reply_markup=get_BONUS_inline_keyboard())
+    if data == CALLBACK_BUTTON_PAYMENT:
+        context.bot.edit_message_text(chat_id=update.effective_message.chat_id,
+                                      message_id=update.effective_message.message_id,
+                                      text="Оплата подписки на тренировки", reply_markup=get_PAYMENT_inline_keyboard())
+
+    if data == CALLBACK_BUTTON_CANCEL:
+        context.bot.edit_message_text(chat_id=update.effective_message.chat_id,
+                                      message_id=update.effective_message.message_id,
+                                      text="Меню бота", reply_markup=get_main_menu_inline_keyboard())
+        return ConversationHandler.END
+
+    if data == CALLBACK_BUTTON_BONUS_PACKAGE:
+        update.effective_message.reply_text("0 руб.", reply_markup=get_cancel_inline_keyboard())
+    if data == CALLBACK_BUTTON_NUMBER_OF_REFERRALS:
+        update.effective_message.reply_text("0 шт.", reply_markup=get_cancel_inline_keyboard())
+def BONUS_menu(update, context):
+    print("QWERTY")
+    query = update.callback_query
+    data = query.data
+    print(data)
+    if data == CALLBACK_BUTTON_BONUS_PACKAGE:
+        update.effective_message.reply_text("0 руб.", reply_markup=get_cancel_inline_keyboard())
+        # context.bot.edit_message_text(chat_id=update.effective_message.chat_id,
+        #                               message_id=update.effective_message.message_id,
+        #                               text="Меню бота", reply_markup=get_main_menu_inline_keyboard())
+    if data == CALLBACK_BUTTON_NUMBER_OF_REFERRALS:
+        update.effective_message.reply_text("0 шт.", reply_markup=get_cancel_inline_keyboard())
+
 
 
 def throw_question_body(update, context):
@@ -178,8 +303,17 @@ def take_message(update, context):
     # # #         "scale_1200.jpg", "rb") as file:
     # # #     data = file.read()
     # update.message.reply_photo(open('scale_1200.jpg', 'rb'))
-    welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
-    update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
+    # videos_group = "-368870653"
+    # main_chat = "419453249"
+    # print(update.message.message_id)
+    # print(update.message.chat_id)
+    # print(dir(context.chat_data))
+    # print(dir(context.user_data))
+    # print(dir(context.bot))
+    # update.message.reply_text(text=update.message.message_id)
+    # context.bot.forward_message(main_chat, videos_group, update.message.message_id)
+    welcome_text = "Меню бота"
+    update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_inline_keyboard())
 
 
 def start(update, context):
@@ -194,6 +328,7 @@ def main():
         entry_points=[CallbackQueryHandler(key_button_handler, pass_chat_data=True)],
         states={
             # OTHER_BODY_QUESTION: [MessageHandler(Filters.text, throw_question_body, pass_user_data=True)],
+            BONUS: [CallbackQueryHandler(BONUS_menu, pass_chat_data=True)],
             OTHER_BODY: [CallbackQueryHandler(answer_to_question_other, pass_chat_data=True)],
             QUESTIONNAIRE_2: [MessageHandler(Filters.text, second_quest, pass_user_data=True)],
             QUESTIONNAIRE_3: [MessageHandler(Filters.text, third_quest, pass_user_data=True)],
@@ -209,7 +344,7 @@ def main():
 
         ],
     )
-    text_handler = MessageHandler(Filters.text, take_message)
+    text_handler = MessageHandler(Filters.all, take_message)
 
     # Регистрируем обработчик в диспетчере.
 
