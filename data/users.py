@@ -27,17 +27,17 @@ class User(SqlAlchemyBase, UserMixin):
         return f'<User> id:{self.id}, balance:{self.balance}'
 
     def get(id):
-        return Users.query.get(id)
+        return User.query.get(id)
 
     def new(id, ref_owner=None):
-        user = Users.get(id)
+        user = User.get(id)
         if user:
             return None
 
         if not user:
             if referal_owner:
-                user = Users(id=id, balance=0, referal_owner=ref_owner)
-            user = Users(id=id, balance=0)
+                user = User(id=id, balance=0, referal_owner=ref_owner)
+            user = User(id=id, balance=0)
             session.add(user)
             session.commit()
             return True
