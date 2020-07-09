@@ -91,7 +91,7 @@ def end_of_questionnaire(update, context):
     update.effective_message.reply_text(text="⏳Подбираем тренировки....")
     chat_id = update.message.chat_id
     try:
-        delay = 2
+        delay = 5
         if 'job' in context.chat_data:
             old_job = context.chat_data['job']
             old_job.schedule_removal()
@@ -159,7 +159,7 @@ def take_message(update, context):
     elif update.message.text == BUTTON_LINK:
         update.message.reply_text(
             text=f"Ссылка:http://t.me/trenirovki_test228bot?start=871qXoi359ref={update.message.chat_id} \n"
-                 f"Отправим ее друзьям, вы что-то там получите))))",
+                 f"Отправив ее друзьям, вы получите бонусные 10р!",
             reply_markup=get_main_menu_bot_keyboard())
     else:
         session = db_session.create_session()
@@ -173,8 +173,6 @@ def take_message(update, context):
 
 
 def start(update, context):
-    # 419453249
-    context.user_data["qwe"] = "!!!"
     context.user_data['ref'] = ""
     if "/start 871qXoi359ref=" in update.message.text:
         session = db_session.create_session()
@@ -183,7 +181,7 @@ def start(update, context):
         if current_user and str(update.message.chat_id) not in current_user.referals:
             current_user.referals_count += 1
             current_user.referals += f" {id_boss_ref}"
-            current_user.balance += 100
+            current_user.balance += 10
             session.commit()
             context.user_data['ref'] = id_boss_ref
     welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
