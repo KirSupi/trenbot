@@ -4,6 +4,7 @@ from telegram.ext import CallbackQueryHandler
 from telegram.ext import CommandHandler
 from telegram.ext import Updater, MessageHandler, Filters, ConversationHandler
 from data import db_session
+from data.users import User
 
 db_session.global_init("db/users.sqlite")
 
@@ -71,6 +72,22 @@ def end_of_questionnaire(update, context):
                                              f"Пол:{context.user_data['ques3']}, \n"
                                              f"Вес:{context.user_data['ques4']}, \n"
                                              f"Рост{context.user_data['ques5']}, \n")
+    referal_id = 0
+    if context.user_data['ref']:
+        referal_id = int(context.user_data['ref'])
+    # ДОбавляем юзера в БД после опроса
+    session = db_session.create_session()
+    user = User(
+        referal_owner=int(referal_id),
+        telegram_id=str(update.effective_message.chat_id),
+        weight=str(context.user_data['ques4']),
+        height=str(context.user_data['ques5']),
+        sex=str(context.user_data['ques3']),
+        age=str(context.user_data['ques2']),
+        name=str(context.user_data['ques1']))
+    session.add(user)
+    session.commit()
+    # ДОбавляем юзера в БД после опроса
     update.effective_message.reply_text(text="⏳Подбираем тренировки....")
     chat_id = update.message.chat_id
     try:
@@ -91,25 +108,14 @@ def end_of_questionnaire(update, context):
 
 
 def task(context):
-    print(context)
     job = context.job
     context.bot.send_message(job.context, text='✅Оптимальный курс тренировок подобран!✅')
     context.bot.send_message(job.context, text='❗️Пора начинать добиваться цели, буквально через неделю ты увидишь'
                                                ' отличные результаты, смотри видео ниже'
                                                ' и забирай первую бесплатную тренировку ПРЯМО СЕЙЧАС❗️')
-    context.bot.forward_message(419453249, group_with_video_id, 611)
+    context.bot.forward_message(job.context, group_with_video_id, 611)
     welcome_text = "Меню бота"
     context.bot.send_message(job.context, text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
-    # # context.bot.send_message(job.context, text='+видео с предлогом начать первую бесплатную тренировку')
-    # videos_group = "-368870653"
-    # main_chat = "419453249"
-    # # print(update.effective_message.message_id)
-    # # print(update.effective_message.chat_id)
-    # print(dir(context.chat_data))
-    # print(dir(context.user_data))
-    # print(dir(context.bot), "!@!@@!@")
-    # print(context.bot.last_name)
-    # print(context.bot.id)
     return ConversationHandler.END
 
 
@@ -121,22 +127,10 @@ def key_button_handler(update, context):
                        " что ты на верном пути и совсем скоро получишь желаемый результат🏃‍♀️"
         context.user_data['kind of training'] = data
         update.effective_message.reply_text(text=context_text)
-        videos_group = "-368870653"
-        context.bot.forward_message(update.effective_message.chat_id, videos_group, 611)
+        context.bot.forward_message(update.effective_message.chat_id, group_with_video_id, 611)
         update.effective_message.reply_text("какие-то видео", reply_markup=get_next_inline_keyboard())
     if data == CALLBACK_BUTTON_NEXT:
         return throw_question_body(update=update, context=context)
-
-
-def BONUS_menu(update, context):
-    print("QWERTY")
-    query = update.callback_query
-    data = query.data
-    print(data)
-    if data == CALLBACK_BUTTON_BONUS_PACKAGE:
-        update.effective_message.reply_text("0 руб.")
-    if data == CALLBACK_BUTTON_NUMBER_OF_REFERRALS:
-        update.effective_message.reply_text("0 шт.")
 
 
 def throw_question_body(update, context):
@@ -153,20 +147,45 @@ def take_message(update, context):
     elif update.message.text == BUTTON_FEEDBACK:
         update.message.reply_text(text="О себе", reply_markup=get_main_menu_bot_keyboard())
     elif update.message.text == BUTTON_NUMBER_OF_REFERRALS:
-        update.message.reply_text(text="0 шт.", reply_markup=get_main_menu_bot_keyboard())
+        session = db_session.create_session()
+        current_user = session.query(User).filter(User.telegram_id == update.message.chat_id).first()
+        update.message.reply_text(text=f"{current_user.referals_count}шт.", reply_markup=get_main_menu_bot_keyboard())
+        session.commit()
     elif update.message.text == BUTTON_BONUS_PACKAGE:
-        update.message.reply_text(text="0 руб.", reply_markup=get_main_menu_bot_keyboard())
+        session = db_session.create_session()
+        current_user = session.query(User).filter(User.telegram_id == update.message.chat_id).first()
+        update.message.reply_text(text=f"{current_user.balance}руб.", reply_markup=get_main_menu_bot_keyboard())
+        session.commit()
     elif update.message.text == BUTTON_LINK:
-        update.message.reply_text(text=f"Ссылка:http://t.me/trenirovki_test228bot?ref={update.message.chat_id} \n"
-                                       f"Отправим ее друзьям, вы что-то там получите))))",
-                                  reply_markup=get_main_menu_bot_keyboard())
+        update.message.reply_text(
+            text=f"Ссылка:http://t.me/trenirovki_test228bot?start=871qXoi359ref={update.message.chat_id} \n"
+                 f"Отправим ее друзьям, вы что-то там получите))))",
+            reply_markup=get_main_menu_bot_keyboard())
     else:
-        welcome_text = "Меню бота"
-        update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
+        session = db_session.create_session()
+        if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
+            session.commit()
+            welcome_text = "Меню бота"
+            update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
+        else:
+            welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
+            update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
 
 
 def start(update, context):
-    print(update.message.text)
+    # 419453249
+    context.user_data["qwe"] = "!!!"
+    context.user_data['ref'] = ""
+    if "/start 871qXoi359ref=" in update.message.text:
+        session = db_session.create_session()
+        id_boss_ref = update.message.text.split("ref=")[-1]
+        current_user = session.query(User).filter(User.telegram_id == id_boss_ref).first()
+        if current_user and str(update.message.chat_id) not in current_user.referals:
+            current_user.referals_count += 1
+            current_user.referals += f" {id_boss_ref}"
+            current_user.balance += 100
+            session.commit()
+            context.user_data['ref'] = id_boss_ref
     welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
     update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
 
@@ -177,7 +196,6 @@ def main():
     questionnaireANDtraining_selection = ConversationHandler(
         entry_points=[CallbackQueryHandler(key_button_handler, pass_chat_data=True)],
         states={
-            # BONUS: [CallbackQueryHandler(BONUS_menu, pass_chat_data=True)],
             OTHER_BODY: [CallbackQueryHandler(answer_to_question_other, pass_chat_data=True)],
             QUESTIONNAIRE_2: [MessageHandler(Filters.text, second_quest, pass_user_data=True)],
             QUESTIONNAIRE_3: [MessageHandler(Filters.text, third_quest, pass_user_data=True)],
