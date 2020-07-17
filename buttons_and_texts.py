@@ -7,6 +7,7 @@ from telegram import ReplyKeyboardMarkup
 # CALLBACK_BUTTON_3_MONTH = "CALLBACK_BUTTON_3_MONTH"
 # CALLBACK_BUTTON_1_YEAR = "CALLBACK_BUTTON_1_YEAR"
 
+
 CALLBACK_BUTTON_NUMBER_OF_REFERRALS = "CALLBACK_BUTTON_NUMBER_OF_REFERRALS"
 CALLBACK_BUTTON_BONUS_PACKAGE = "CALLBACK_BUTTON_BONUS_PACKAGE"
 CALLBACK_BUTTON_CANCEL = "CALLBACK_BUTTON_CANCEL"
@@ -40,6 +41,10 @@ BUTTON_FEEDBACK = "Обратная связь"
 BUTTON_BONUS = "Бонусы(реферальная система)"
 BUTTON_PAYMENT = "Оплата подписки на тренировки"
 # \
+
+#/
+BUTTON_BACK = "Назад⬅️"
+#\
 # Меню по оплате подписки/
 BUTTON_1M = "1 месяц"
 BUTTON_3M = "3 месяца"
@@ -74,7 +79,9 @@ def get_PAYMENT_keyboard():
             KeyboardButton(BUTTON_1M),
             KeyboardButton(BUTTON_3M),
             KeyboardButton(BUTTON_1Y),
+
         ],
+        [KeyboardButton(BUTTON_BACK)],
     ]
     return ReplyKeyboardMarkup(
         keyboard=keyboard,
@@ -89,6 +96,7 @@ def get_BONUS_keyboard():
             KeyboardButton(BUTTON_BONUS_PACKAGE),
             KeyboardButton(BUTTON_LINK),
         ],
+        [KeyboardButton(BUTTON_BACK)],
     ]
     return ReplyKeyboardMarkup(
         keyboard=keyboard,
