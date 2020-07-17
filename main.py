@@ -141,42 +141,51 @@ def throw_question_body(update, context):
 
 
 def take_message(update, context):
-    if update.message.text == BUTTON_PAYMENT:
-        update.message.reply_text(text="Оплата подписки на тренировки", reply_markup=get_PAYMENT_keyboard())
-    elif update.message.text == BUTTON_BONUS:
-        update.message.reply_text(text="Бонусы(реферальная система)", reply_markup=get_BONUS_keyboard())
-    elif update.message.text == BUTTON_FEEDBACK:
-        update.message.reply_text(text="О себе", reply_markup=get_main_menu_bot_keyboard())
-    elif update.message.text == BUTTON_NUMBER_OF_REFERRALS:
-        session = db_session.create_session()
-        current_user = session.query(User).filter(User.telegram_id == update.message.chat_id).first()
-        update.message.reply_text(text=f"{current_user.referals_count}шт.", reply_markup=get_main_menu_bot_keyboard())
-        session.commit()
-    elif update.message.text == BUTTON_BONUS_PACKAGE:
-        session = db_session.create_session()
-        current_user = session.query(User).filter(User.telegram_id == update.message.chat_id).first()
-        update.message.reply_text(text=f"{current_user.balance}руб.", reply_markup=get_main_menu_bot_keyboard())
-        session.commit()
-    elif update.message.text == BUTTON_LINK:
-        update.message.reply_text(
-            text=f"Ссылка:http://t.me/trenirovki_test228bot?start=871qXoi359ref={update.message.chat_id} \n"
-                 f"Отправив ее друзьям, вы получите бонусные 10р!",
-            reply_markup=get_main_menu_bot_keyboard())
+    print(update.message.chat_id, group_with_video_id)
+    if str(update.message.chat_id) == str(group_with_video_id):
+        print("!!!!")
+        update.message.reply_text(text=f"Видео ID: {update.message.message_id}")
     else:
-        session = db_session.create_session()
-        if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
+        print(",,,,,")
+        if update.message.text == BUTTON_BACK:
+            update.message.reply_text(text="Меню бота", reply_markup=get_main_menu_bot_keyboard())
+        elif update.message.text == BUTTON_PAYMENT:
+            update.message.reply_text(text="Оплата подписки на тренировки", reply_markup=get_PAYMENT_keyboard())
+        elif update.message.text == BUTTON_BONUS:
+            update.message.reply_text(text="Бонусы(реферальная система)", reply_markup=get_BONUS_keyboard())
+        elif update.message.text == BUTTON_FEEDBACK:
+            update.message.reply_text(text="О себе", reply_markup=get_main_menu_bot_keyboard())
+        elif update.message.text == BUTTON_NUMBER_OF_REFERRALS:
+            session = db_session.create_session()
+            current_user = session.query(User).filter(User.telegram_id == update.message.chat_id).first()
+            update.message.reply_text(text=f"{current_user.referals_count}шт.",
+                                      reply_markup=get_main_menu_bot_keyboard())
             session.commit()
-            welcome_text = "Меню бота"
-            update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
+        elif update.message.text == BUTTON_BONUS_PACKAGE:
+            session = db_session.create_session()
+            current_user = session.query(User).filter(User.telegram_id == update.message.chat_id).first()
+            update.message.reply_text(text=f"{current_user.balance}руб.", reply_markup=get_main_menu_bot_keyboard())
+            session.commit()
+        elif update.message.text == BUTTON_LINK:
+            update.message.reply_text(
+                text=f"Ссылка:http://t.me/trenirovki_test228bot?start=871qXoi359ref={update.message.chat_id} \n"
+                     f"Отправив ее друзьям, вы получите бонусные 10р!",
+                reply_markup=get_main_menu_bot_keyboard())
         else:
-            welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
-            update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
+            session = db_session.create_session()
+            if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
+                session.commit()
+                welcome_text = "Меню бота"
+                update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
+            else:
+                welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
+                update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
 
 
 def start(update, context):
     context.user_data['ref'] = ""
+    session = db_session.create_session()
     if "/start 871qXoi359ref=" in update.message.text:
-        session = db_session.create_session()
         id_boss_ref = update.message.text.split("ref=")[-1]
         current_user = session.query(User).filter(User.telegram_id == id_boss_ref).first()
         if current_user and str(update.message.chat_id) not in current_user.referals:
@@ -185,9 +194,14 @@ def start(update, context):
             current_user.balance += 10
             session.commit()
             context.user_data['ref'] = id_boss_ref
-    welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
-    update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
-
+    else:
+        if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
+            welcome_text = "Меню бота"
+            update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
+        else:
+            welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
+            update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
+        session.commit()
 
 def main():
     updater = Updater(TOKEN, use_context=True, request_kwargs=request_)
