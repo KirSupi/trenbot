@@ -5,6 +5,7 @@ from telegram.ext import CommandHandler
 from telegram.ext import Updater, MessageHandler, Filters, ConversationHandler
 from data import db_session
 from data.users import User
+from data.payments import Payment
 
 db_session.global_init("db/users.sqlite")
 
