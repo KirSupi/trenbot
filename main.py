@@ -4,6 +4,7 @@ from telegram.ext import CallbackQueryHandler
 from telegram.ext import CommandHandler
 from telegram.ext import Updater, MessageHandler, Filters, ConversationHandler
 from data import db_session
+from data.admins import Admin
 from data.users import User
 import time
 from data.payments import Payment
@@ -184,63 +185,85 @@ def make_BONUS(update, context, type_):
 
 def take_message(update, context):
     print(update.message.chat_id, group_with_video_id)
-    if str(update.message.chat_id) == str(group_with_video_id):
-        update.message.reply_text(text=f"Видео ID: {update.message.message_id}")
+    session = db_session.create_session()
+    check_user = session.query(User).filter(Admin.telegram_id == update.message.chat_id).first()
+    session.commit()
+    if check_user:
+        if check_user.priority == "admin":
+            update.message.reply_text(text="Меню админа", reply_markup=get_admin_keyboard())
+        elif check_user.priority == "moder":
+            update.message.reply_text(text="Меню модератора", reply_markup=get_admin_keyboard())
     else:
-        if update.message.text == BUTTON_BACK:
-            update.message.reply_text(text="Меню бота", reply_markup=get_main_menu_bot_keyboard())
-        elif update.message.text == BUTTON_STARTTRAINING:
-            update.message.reply_text(text=STARTTRAINING, reply_markup=get_training())
-        elif update.message.text == BUTTON_PAYMENT:
-            update.message.reply_text(text=PAYMENT_TEXT, reply_markup=get_PAYMENT_keyboard())
-        elif update.message.text in [BUTTON_GW, BUTTON_LW]:
-            return start_training(update=update, context=context)
-        elif update.message.text in [BUTTON_1P, BUTTON_2P, BUTTON_3P, BUTTON_4P, BUTTON_5P]:
-            return make_payment(update=update, context=context, type_pay=update.message.text)
-        elif update.message.text == BUTTON_BONUS:
-            update.message.reply_text(text=BONUS_TEXT, reply_markup=get_BONUS_keyboard())
-        elif update.message.text == BUTTON_FEEDBACK:
-            update.message.reply_text(text=FEEDBACK_TEXT)
-        elif update.message.text == BUTTON_USERRESULTS:
-            update.message.reply_text(text=USERRESULTS_TEXT, reply_markup=get_user_results())
-        elif update.message.text == BUTTON_RESULTS:
-            update.message.reply_text(text="Результаты какого вида тренировок,"
-                                           " вы хотите посмотреть?", reply_markup=get_user_res_type())
-        elif update.message.text in [BUTTON_GET_WEIGHT, BUTTON_LOSE_WEIGHT]:
-            return get_res_people(update=update, context=context, type_training=update.message.text)
-        elif update.message.text in [BUTTON_NUMBER_OF_REFERRALS, BUTTON_BONUS_PACKAGE, BUTTON_LINK]:
-            return make_BONUS(update=update, context=context, type_=update.message.text)
+        if str(update.message.chat_id) == str(group_with_video_id):
+            update.message.reply_text(text=f"Видео ID: {update.message.message_id}")
         else:
-            session = db_session.create_session()
-            if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
+            if update.message.text == BUTTON_BACK:
+                update.message.reply_text(text="Меню бота", reply_markup=get_main_menu_bot_keyboard())
+            elif update.message.text == BUTTON_STARTTRAINING:
+                update.message.reply_text(text=STARTTRAINING, reply_markup=get_training())
+            elif update.message.text == BUTTON_PAYMENT:
+                update.message.reply_text(text=PAYMENT_TEXT, reply_markup=get_PAYMENT_keyboard())
+            elif update.message.text in [BUTTON_GW, BUTTON_LW]:
+                return start_training(update=update, context=context)
+            elif update.message.text in [BUTTON_1P, BUTTON_2P, BUTTON_3P, BUTTON_4P, BUTTON_5P]:
+                return make_payment(update=update, context=context, type_pay=update.message.text)
+            elif update.message.text == BUTTON_BONUS:
+                update.message.reply_text(text=BONUS_TEXT, reply_markup=get_BONUS_keyboard())
+            elif update.message.text == BUTTON_FEEDBACK:
+                update.message.reply_text(text=FEEDBACK_TEXT)
+            elif update.message.text == BUTTON_USERRESULTS:
+                update.message.reply_text(text=USERRESULTS_TEXT, reply_markup=get_user_results())
+            elif update.message.text == BUTTON_RESULTS:
+                update.message.reply_text(text="Результаты какого вида тренировок,"
+                                               " вы хотите посмотреть?", reply_markup=get_user_res_type())
+            elif update.message.text in [BUTTON_GET_WEIGHT, BUTTON_LOSE_WEIGHT]:
+                return get_res_people(update=update, context=context, type_training=update.message.text)
+            elif update.message.text in [BUTTON_NUMBER_OF_REFERRALS, BUTTON_BONUS_PACKAGE, BUTTON_LINK]:
+                return make_BONUS(update=update, context=context, type_=update.message.text)
+            else:
+                session = db_session.create_session()
+                if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
+                    session.commit()
+                    welcome_text = "Меню бота"
+                    update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
+                else:
+                    welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
+                    update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
+
+
+
+def start(update, context):
+    session = db_session.create_session()
+    check_user = session.query(User).filter(Admin.telegram_id == update.message.chat_id).first()
+    if check_user:
+        context.user_data['admin'] = True
+        welcome_text = f"Добро пожаловать, {check_user.name}. Вы {check_user.priority}"
+        session.commit()
+        if check_user.priority == "admin":
+            update.message.reply_text(text="Меню админа", reply_markup=get_admin_keyboard())
+        elif check_user.priority == "moder":
+            update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
+    else:
+        context.user_data['admin'] = False
+        context.user_data['ref'] = ""
+        # session = db_session.create_session()
+        if "/start 871qXoi359ref=" in update.message.text:
+            id_boss_ref = update.message.text.split("ref=")[-1]
+            current_user = session.query(User).filter(User.telegram_id == id_boss_ref).first()
+            if current_user and str(update.message.chat_id) not in current_user.referals:
+                current_user.referals_count += 1
+                current_user.referals += f" {id_boss_ref}"
+                current_user.balance += 10
                 session.commit()
+                context.user_data['ref'] = id_boss_ref
+        else:
+            if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
                 welcome_text = "Меню бота"
                 update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
             else:
                 welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
                 update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
-
-
-def start(update, context):
-    context.user_data['ref'] = ""
-    session = db_session.create_session()
-    if "/start 871qXoi359ref=" in update.message.text:
-        id_boss_ref = update.message.text.split("ref=")[-1]
-        current_user = session.query(User).filter(User.telegram_id == id_boss_ref).first()
-        if current_user and str(update.message.chat_id) not in current_user.referals:
-            current_user.referals_count += 1
-            current_user.referals += f" {id_boss_ref}"
-            current_user.balance += 10
             session.commit()
-            context.user_data['ref'] = id_boss_ref
-    else:
-        if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
-            welcome_text = "Меню бота"
-            update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
-        else:
-            welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
-            update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
-        session.commit()
 
 
 def main():

@@ -185,44 +185,6 @@ def get_training():
     )
 
 
-# def get_cancel_inline_keyboard():
-#     keyboard = [[InlineKeyboardButton(TITLES[CALLBACK_BUTTON_CANCEL], callback_data=CALLBACK_BUTTON_CANCEL)]]
-#     return InlineKeyboardMarkup(keyboard)
-
-
-# def get_FEEDBACK_inline_keyboard():
-#     keyboard = [[InlineKeyboardButton(TITLES[CALLBACK_BUTTON_CANCEL], callback_data=CALLBACK_BUTTON_CANCEL)]]
-#     return InlineKeyboardMarkup(keyboard)
-
-
-# def get_PAYMENT_inline_keyboard():
-#     keyboard = [[InlineKeyboardButton(TITLES[CALLBACK_BUTTON_1_MONTH], callback_data=CALLBACK_BUTTON_1_MONTH), ],
-#                 [InlineKeyboardButton(TITLES[CALLBACK_BUTTON_3_MONTH], callback_data=CALLBACK_BUTTON_3_MONTH), ],
-#                 [InlineKeyboardButton(TITLES[CALLBACK_BUTTON_1_YEAR], callback_data=CALLBACK_BUTTON_1_YEAR), ],
-#                 [InlineKeyboardButton(TITLES[CALLBACK_BUTTON_CANCEL], callback_data=CALLBACK_BUTTON_CANCEL)],
-#                 ]
-#     return InlineKeyboardMarkup(keyboard)
-
-#
-# def get_BONUS_inline_keyboard():
-#     keyboard = [[InlineKeyboardButton(TITLES[CALLBACK_BUTTON_NUMBER_OF_REFERRALS],
-#                                       callback_data=CALLBACK_BUTTON_NUMBER_OF_REFERRALS), ],
-#                 [InlineKeyboardButton(TITLES[CALLBACK_BUTTON_BONUS_PACKAGE],
-#                                       callback_data=CALLBACK_BUTTON_BONUS_PACKAGE), ],
-#                 [InlineKeyboardButton(TITLES[CALLBACK_BUTTON_CANCEL], callback_data=CALLBACK_BUTTON_CANCEL)],
-#                 ]
-#     return InlineKeyboardMarkup(keyboard)
-
-
-# def get_main_menu_inline_keyboard():
-#     keyboard = [[InlineKeyboardButton(TITLES[CALLBACK_BUTTON_PAYMENT], callback_data=CALLBACK_BUTTON_PAYMENT),
-#                  InlineKeyboardButton(TITLES[CALLBACK_BUTTON_BONUS], callback_data=CALLBACK_BUTTON_BONUS),
-#                  InlineKeyboardButton(TITLES[CALLBACK_BUTTON_FEEDBACK], callback_data=CALLBACK_BUTTON_FEEDBACK),
-#                  ]
-#                 ]
-#     return InlineKeyboardMarkup(keyboard)
-
-
 def get_next_inline_keyboard():
     keyboard = [[InlineKeyboardButton(TITLES[CALLBACK_BUTTON_NEXT], callback_data=CALLBACK_BUTTON_NEXT), ]]
     return InlineKeyboardMarkup(keyboard)
@@ -242,3 +204,42 @@ def get_question_other_body_inline_keyboard():
                  ]
                 ]
     return InlineKeyboardMarkup(keyboard)
+
+
+# __________________________________ADMIN&MODERNmode____________________________
+
+# ____________ADMIN_MODE___________________{
+BUTTON_ADD_MODER = "Добавить модератора"
+BUTTON_CHANGE_PRIORITY = "Изменить приоритет"
+BUTTON_CHANGE_FEEDBACK_TEXT = "Изменить текст раздела 'О СЕБЕ'"
+
+
+def get_admin_keyboard():
+    keyboard = [
+
+        [KeyboardButton(BUTTON_ADD_MODER),
+         KeyboardButton(BUTTON_CHANGE_PRIORITY),
+         KeyboardButton(BUTTON_CHANGE_FEEDBACK_TEXT),
+         ],
+    ]
+    return ReplyKeyboardMarkup(
+        keyboard=keyboard,
+        resize_keyboard=True,
+    )
+
+
+# ____________ADMIN_MODE___________________}
+# ____________MODER_MODE___________________{
+def get_moder_keyboard():
+    keyboard = [
+
+        [
+            KeyboardButton(BUTTON_CHANGE_FEEDBACK_TEXT),
+        ],
+    ]
+    return ReplyKeyboardMarkup(
+        keyboard=keyboard,
+        resize_keyboard=True,
+    )
+
+# ____________MODER_MODE___________________}
