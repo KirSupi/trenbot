@@ -37,23 +37,40 @@ TITLES = {
     CALLBACK_BUTTON_I_DONT_WANT: "Нет, не хочу"
 }
 # Главное меню бота/
+
+BUTTON_STARTTRAINING = "Начать тренироваться"
+BUTTON_USERRESULTS = "Результаты клиентов"
 BUTTON_FEEDBACK = "Обратная связь"
-BUTTON_BONUS = "Бонусы(реферальная система)"
+BUTTON_BONUS = "🎁Бонусы"
 BUTTON_PAYMENT = "Оплата подписки на тренировки"
 # \
 
-#/
-BUTTON_BACK = "Назад⬅️"
-#\
-# Меню по оплате подписки/
-BUTTON_1M = "1 месяц"
-BUTTON_3M = "3 месяца"
-BUTTON_1Y = "1 год"
+# /
+BUTTON_BACK = "⬅️Главное меню"
 # \
 # Меню по оплате подписки/
-BUTTON_NUMBER_OF_REFERRALS = "Кол-во рефералов"
-BUTTON_BONUS_PACKAGE = "Размер бонуса"
+BUTTON_1P = "💳7 дней - 699р"
+BUTTON_2P = "💳30 дней(-15%) - 2.399р"
+BUTTON_3P = "💳90 дней(-40%) - 4.999р"
+BUTTON_4P = "💳180 дней(-60%) - 9.999р"
+BUTTON_5P = "💳Безлимит - 19.999р"
+# \
+# Меню по оплате подписки/
+BUTTON_NUMBER_OF_REFERRALS = "👫Кол-во рефералов"
+BUTTON_BONUS_PACKAGE = "💸Баланс"
 BUTTON_LINK = "Получить ссылку"
+# \
+# Меню результаты клиентов/
+BUTTON_RESULTS = "✅Результаты клиентов"
+
+BUTTON_GET_WEIGHT = "Накачаться"
+BUTTON_LOSE_WEIGHT = "Похудеть"
+
+# \
+# Меню "Начать тренироваться"/
+
+BUTTON_GW = "🏋️‍♀️Тренировка на набор мышц"
+BUTTON_LW = "🤸Тренировка на похудение"
 
 
 # \
@@ -61,11 +78,16 @@ BUTTON_LINK = "Получить ссылку"
 
 def get_main_menu_bot_keyboard():
     keyboard = [
+
+        [KeyboardButton(BUTTON_STARTTRAINING),
+         KeyboardButton(BUTTON_PAYMENT),
+         KeyboardButton(BUTTON_BONUS),
+         ],
         [
-            KeyboardButton(BUTTON_PAYMENT),
-            KeyboardButton(BUTTON_BONUS),
+
+            KeyboardButton(BUTTON_USERRESULTS),
             KeyboardButton(BUTTON_FEEDBACK),
-        ],
+        ]
     ]
     return ReplyKeyboardMarkup(
         keyboard=keyboard,
@@ -76,11 +98,10 @@ def get_main_menu_bot_keyboard():
 def get_PAYMENT_keyboard():
     keyboard = [
         [
-            KeyboardButton(BUTTON_1M),
-            KeyboardButton(BUTTON_3M),
-            KeyboardButton(BUTTON_1Y),
+            KeyboardButton(BUTTON_1P), KeyboardButton(BUTTON_2P), ],
+        [KeyboardButton(BUTTON_3P), KeyboardButton(BUTTON_4P), ],
+        [KeyboardButton(BUTTON_5P), ],
 
-        ],
         [KeyboardButton(BUTTON_BACK)],
     ]
     return ReplyKeyboardMarkup(
@@ -95,6 +116,45 @@ def get_BONUS_keyboard():
             KeyboardButton(BUTTON_NUMBER_OF_REFERRALS),
             KeyboardButton(BUTTON_BONUS_PACKAGE),
             KeyboardButton(BUTTON_LINK),
+        ],
+        [KeyboardButton(BUTTON_BACK)],
+    ]
+    return ReplyKeyboardMarkup(
+        keyboard=keyboard,
+        resize_keyboard=True,
+    )
+
+
+def get_user_results():
+    keyboard = [
+        [
+            KeyboardButton(BUTTON_RESULTS),
+        ],
+        [KeyboardButton(BUTTON_BACK)],
+    ]
+    return ReplyKeyboardMarkup(
+        keyboard=keyboard,
+        resize_keyboard=True,
+    )
+
+
+def get_user_res_type():
+    keyboard = [
+        [
+            KeyboardButton(BUTTON_GET_WEIGHT), KeyboardButton(BUTTON_LOSE_WEIGHT),
+        ],
+        [KeyboardButton(BUTTON_BACK)],
+    ]
+    return ReplyKeyboardMarkup(
+        keyboard=keyboard,
+        resize_keyboard=True,
+    )
+
+
+def get_training():
+    keyboard = [
+        [
+            KeyboardButton(BUTTON_GW), KeyboardButton(BUTTON_LW),
         ],
         [KeyboardButton(BUTTON_BACK)],
     ]

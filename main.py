@@ -5,6 +5,7 @@ from telegram.ext import CommandHandler
 from telegram.ext import Updater, MessageHandler, Filters, ConversationHandler
 from data import db_session
 from data.users import User
+import time
 from data.payments import Payment
 
 db_session.global_init("db/users.sqlite")
@@ -140,6 +141,39 @@ def throw_question_body(update, context):
     return OTHER_BODY
 
 
+def make_payment(update, context, type_pay):
+    update.message.reply_text(text=f"Вы произвели оплату на {type_pay}")
+
+
+def start_training(update, context):
+    session = db_session.create_session()
+    current_user = session.query(User).filter(User.telegram_id == update.message.chat_id).first()
+    if current_user.date_to_payment > int(time.time()):
+        update.message.reply_text("Кнопки с видео")
+    else:
+
+        update.message.reply_text("У вас не оплачена подписка !")
+        text_context = "❗️ВНИМАНИЕ ПРЯМО СЕЙЧАС ДЕЙСТВУЮТ  СКИДКИ❗️ Оплачивая подписку вы получаете ежедневные эффективные тренировки, которые" \
+                       " гарантируют вам быстрый и стабильный результат." \
+                       " Покупая тарифные планы '💳 90 дней', '💳Безлимит'" \
+                       " или '💳180 дней' вы так же получите доступ к VIP консультациям," \
+                       " нутрициолога и личного фитнес тренера, которые будут помогать и отвечать на ваши вопросы 24/7!"
+        update.message.reply_text(text=text_context, reply_markup=get_PAYMENT_keyboard())
+
+
+def get_res_people(update, context, type_training):
+    if type_training == BUTTON_GET_WEIGHT:
+        update.message.reply_text("До")
+        update.message.reply_photo(open('src\img\p1.jpg', 'rb'))
+        update.message.reply_text("После")
+        update.message.reply_photo(open('src\img\p2.jpg', 'rb'))
+    elif type_training == BUTTON_LOSE_WEIGHT:
+        update.message.reply_text("До")
+        update.message.reply_photo(open('src\img\p3.jpg', 'rb'))
+        update.message.reply_text("После")
+        update.message.reply_photo(open('src\img\p4.jpg', 'rb'))
+
+
 def take_message(update, context):
     print(update.message.chat_id, group_with_video_id)
     if str(update.message.chat_id) == str(group_with_video_id):
@@ -149,28 +183,53 @@ def take_message(update, context):
         print(",,,,,")
         if update.message.text == BUTTON_BACK:
             update.message.reply_text(text="Меню бота", reply_markup=get_main_menu_bot_keyboard())
+        elif update.message.text == BUTTON_STARTTRAINING:
+            text_context = "Самое время начинать тренироваться!" \
+                           " Жми на кнопку ниже и выбирай нужную тебе тренировку."
+            update.message.reply_text(text=text_context, reply_markup=get_training())
+        #      return start_training(update=update, context=context)
         elif update.message.text == BUTTON_PAYMENT:
-            update.message.reply_text(text="Оплата подписки на тренировки", reply_markup=get_PAYMENT_keyboard())
+            text_context = "❗️ВНИМАНИЕ ПРЯМО СЕЙЧАС ДЕЙСТВУЮТ  СКИДКИ❗️ Оплачивая подписку вы получаете ежедневные эффективные тренировки, которые" \
+                           " гарантируют вам быстрый и стабильный результат." \
+                           " Покупая тарифные планы '💳 90 дней', '💳Безлимит'" \
+                           " или '💳180 дней' вы так же получите доступ к VIP консультациям," \
+                           " нутрициолога и личного фитнес тренера, которые будут помогать и отвечать на ваши вопросы 24/7!"
+            update.message.reply_text(text=text_context, reply_markup=get_PAYMENT_keyboard())
+        elif update.message.text in [BUTTON_GW, BUTTON_LW]:
+            return start_training(update=update, context=context)
+        elif update.message.text in [BUTTON_1P, BUTTON_2P, BUTTON_3P, BUTTON_4P, BUTTON_5P]:
+            return make_payment(update=update, context=context, type_pay=update.message.text)
         elif update.message.text == BUTTON_BONUS:
-            update.message.reply_text(text="Бонусы(реферальная система)", reply_markup=get_BONUS_keyboard())
+            text_current = "Вы можете поделиться в своих соц. сетях нашим" \
+                           " проектом и получать деньги на баланс, которыми вы сможете оплатить подписку на тренировки!"
+            update.message.reply_text(text=text_current, reply_markup=get_BONUS_keyboard())
         elif update.message.text == BUTTON_FEEDBACK:
-            update.message.reply_text(text="О себе", reply_markup=get_main_menu_bot_keyboard())
+            text_context = "Остались вопросы? Напишите нашему менеджеру," \
+                           " он обязательно поможет вам и быстро ответит на все ваши вопросы! @ахуенный манагер"
+            update.message.reply_text(text=text_context)
+        elif update.message.text == BUTTON_USERRESULTS:
+            text_context = "Жми на кнопку и смотри еще больше результатов людей," \
+                           " которые воспользовались нашими тренировочными курсами!"
+            update.message.reply_text(text=text_context, reply_markup=get_user_results())
+        elif update.message.text == BUTTON_RESULTS:
+            update.message.reply_text(text="Результаты какого вида тренировок,"
+                                           " вы хотите посмотреть?", reply_markup=get_user_res_type())
+        elif update.message.text in [BUTTON_GET_WEIGHT, BUTTON_LOSE_WEIGHT]:
+            get_res_people(update=update, context=context, type_training=update.message.text)
         elif update.message.text == BUTTON_NUMBER_OF_REFERRALS:
             session = db_session.create_session()
             current_user = session.query(User).filter(User.telegram_id == update.message.chat_id).first()
-            update.message.reply_text(text=f"{current_user.referals_count}шт.",
-                                      reply_markup=get_main_menu_bot_keyboard())
+            update.message.reply_text(text=f"{current_user.referals_count}шт.")
             session.commit()
         elif update.message.text == BUTTON_BONUS_PACKAGE:
             session = db_session.create_session()
             current_user = session.query(User).filter(User.telegram_id == update.message.chat_id).first()
-            update.message.reply_text(text=f"{current_user.balance}руб.", reply_markup=get_main_menu_bot_keyboard())
+            update.message.reply_text(text=f"{current_user.balance}руб.")
             session.commit()
         elif update.message.text == BUTTON_LINK:
             update.message.reply_text(
                 text=f"Ссылка:http://t.me/trenirovki_test228bot?start=871qXoi359ref={update.message.chat_id} \n"
-                     f"Отправив ее друзьям, вы получите бонусные 10р!",
-                reply_markup=get_main_menu_bot_keyboard())
+                     f"Отправив ее друзьям, вы получите бонусные 10р!")
         else:
             session = db_session.create_session()
             if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
@@ -202,6 +261,7 @@ def start(update, context):
             welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
             update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
         session.commit()
+
 
 def main():
     updater = Updater(TOKEN, use_context=True, request_kwargs=request_)
