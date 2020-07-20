@@ -183,16 +183,174 @@ def make_BONUS(update, context, type_):
     session.commit()
 
 
+def add_most_people(update, context):
+    update.message.reply_text("Перешлите сообщение человека, которого хотите сделать модератором",
+                              reply_markup=get_cancel_keyboard())
+    return get_forward_message
+
+
+def add_most_people_end(update, context):
+    if update.message.text == "/CANCEL":
+        update.message.reply_text("Введите любой текст, для вызова меню")
+        return ConversationHandler.END
+    moder = update.message.forward_from
+    session = db_session.create_session()
+    moder1 = Admin(telegram_id=moder['id'], name=moder['first_name'], priority="moder")
+    session.add(moder1)
+    session.commit()
+    update.message.reply_text(text=f"Модератор {moder1.name} успешно добавлен!")
+    return ConversationHandler.END
+
+
+def delete_user(update, context):
+    update.message.reply_text("Перешлите сообщение человека, которого хотите удалить",
+                              reply_markup=get_cancel_keyboard())
+    return delete
+
+
+def delete_user_end(update, context):
+    if update.message.text == "/CANCEL":
+        update.message.reply_text("Введите любой текст, для вызова меню")
+        return ConversationHandler.END
+    else:
+        session = db_session.create_session()
+        admin_moder = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id).first()
+        if admin_moder.priority == "admin":
+            moder = session.query(Admin).filter(Admin.telegram_id == update.message.forward_from['id']).first()
+            session.delete(moder)
+            session.commit()
+            update.message.reply_text("Успешно!")
+        elif admin_moder.priority == "moder":
+            pass
+        return ConversationHandler.END
+
+
+def change_balance(update, context):
+    update.message.reply_text("Перешлите сообщение человека, у которого хотите изменить баланс",
+                              reply_markup=get_cancel_keyboard())
+    return get_balance_id
+
+
+def change_balance_id(update, context):
+    if update.message.text == "/CANCEL":
+        update.message.reply_text("Введите любой текст, для вызова меню")
+        return ConversationHandler.END
+    print(update.message.text)
+    print(update.message.forward_from, "!")
+    context.user_data['balance_id'] = update.message.forward_from
+    update.message.reply_text(f"Введите новое значение баланса для юзера {context.user_data['balance_id'].first_name}")
+    # user_info =
+    # session = db_session.create_session()
+    # user = session.query(User).filter(User.telegram_id == user_info['id']).first()
+    # user.balance =
+    # session.commit()
+    return get_balance
+
+
+def change_balance_end(update, context):
+    if update.message.text == "/CANCEL":
+        update.message.reply_text("Введите любой текст, для вызова меню")
+        return ConversationHandler.END
+    else:
+        session = db_session.create_session()
+        user = session.query(User).filter(User.telegram_id == context.user_data['balance_id'].id).first()
+        user.balance = int(update.message.text)
+        session.commit()
+        update.message.reply_text("Успешно!")
+        return ConversationHandler.END
+
+
+def change_text(update, context):
+    update.message.reply_text("Введите новый текст:")
+    # with open("feedback.txt", 'w', encoding='utf-8') as f:
+    #     f.write("my first filen")
+    #     f.write("This filenn")
+    #     f.write("contains three linesn")
+    return get_text
+
+
+def change_text_end(update, context):
+    if update.message.text == "/CANCEL":
+        update.message.reply_text("Введите любой текст, для вызова меню")
+        return ConversationHandler.END
+    else:
+        with open("feedback.txt", 'w', encoding='utf-8') as f:
+            f.write(update.message.text)
+        f.close()
+        update.message.reply_text("Текст успешно изменен!")
+        return ConversationHandler.END
+
+
+def renewed_sub(update, context):
+    update.message.reply_text("Перешлите сообщение человека, у которого хотите продлить подписку",
+                              reply_markup=get_cancel_keyboard())
+    return sub
+
+
+def renewed_sub_id(update, context):
+    if update.message.text == "/CANCEL":
+        update.message.reply_text("Введите любой текст, для вызова меню")
+        return ConversationHandler.END
+    else:
+        context.user_data['sub'] = update.message.forward_from
+        # if admin_moder.priority == "admin":
+        #     # moder = session.query(Admin).filter(Admin.telegram_id == update.message.forward_from['id']).first()
+        #     # session.delete(moder)
+        #     # session.commit()
+        update.message.reply_text("Введите набор цыфр для продления подписки")
+        text_ = "1 - день \n" \
+                "2 - месяц \n" \
+                "3 - год \n" \
+                "4 - навсегда \n" \
+                "Первоа цифры - тип множителя. \n" \
+                "Второе число - кол-во. \n" \
+                "___________________ \n" \
+                "Пример: 1230 = 230 дней, 34 = 4 года"
+        update.message.reply_text(text=text_)
+        # update.message.reply_text("Типо успешно прошло продление подпски!")
+        # update.message.reply_text("Успешно!")
+        return sub_end
+
+
+def renewed_sub_end(update, context):
+    if update.message.text == "/CANCEL":
+        update.message.reply_text("Введите любой текст, для вызова меню")
+        return ConversationHandler.END
+    code = update.message.text
+    type_ = int(code[0])
+    counts = int(code[1:])
+    info_user = context.user_data['sub']
+    session = db_session.create_session()
+    user = session.query(User).filter(User.telegram_id == info_user.id).first()
+    if type_ == 1:
+        user.date_to_payment += counts * 60 * 60 * 24 * 1
+    elif type_ == 2:
+        user.date_to_payment += counts * 60 * 60 * 24 * 30
+    elif type_ == 3:
+        user.date_to_payment += counts * 60 * 60 * 24 * 30 * 12
+    elif type_ == 4:
+        user.date_to_payment += counts * 60 * 60 * 24 * 30 * 12 * 50
+
+    session.commit()
+    update.message.reply_text(f"Успешно! Подписка для {user.name} продлина до {user.date_to_payment}")
+    return ConversationHandler.END
+
+
+# 419453249
+# 419453249
 def take_message(update, context):
+    print("update.message", dir(update.message))
+    print(update.message.from_user)
+    print("forward_from", update.message.forward_from)
     print(update.message.chat_id, group_with_video_id)
     session = db_session.create_session()
-    check_user = session.query(User).filter(Admin.telegram_id == update.message.chat_id).first()
+    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id).first()
     session.commit()
     if check_user:
         if check_user.priority == "admin":
             update.message.reply_text(text="Меню админа", reply_markup=get_admin_keyboard())
         elif check_user.priority == "moder":
-            update.message.reply_text(text="Меню модератора", reply_markup=get_admin_keyboard())
+            update.message.reply_text(text="Меню модератора", reply_markup=get_moder_keyboard())
     else:
         if str(update.message.chat_id) == str(group_with_video_id):
             update.message.reply_text(text=f"Видео ID: {update.message.message_id}")
@@ -210,7 +368,7 @@ def take_message(update, context):
             elif update.message.text == BUTTON_BONUS:
                 update.message.reply_text(text=BONUS_TEXT, reply_markup=get_BONUS_keyboard())
             elif update.message.text == BUTTON_FEEDBACK:
-                update.message.reply_text(text=FEEDBACK_TEXT)
+                update.message.reply_text(text=get_feedback_text())
             elif update.message.text == BUTTON_USERRESULTS:
                 update.message.reply_text(text=USERRESULTS_TEXT, reply_markup=get_user_results())
             elif update.message.text == BUTTON_RESULTS:
@@ -231,18 +389,22 @@ def take_message(update, context):
                     update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
 
 
+def cancel(update, context):
+    return ConversationHandler.END
+
 
 def start(update, context):
     session = db_session.create_session()
-    check_user = session.query(User).filter(Admin.telegram_id == update.message.chat_id).first()
+    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id).first()
     if check_user:
         context.user_data['admin'] = True
         welcome_text = f"Добро пожаловать, {check_user.name}. Вы {check_user.priority}"
+        update.message.reply_text(text=welcome_text)
         session.commit()
         if check_user.priority == "admin":
             update.message.reply_text(text="Меню админа", reply_markup=get_admin_keyboard())
         elif check_user.priority == "moder":
-            update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
+            update.message.reply_text(text="Меню модератора", reply_markup=get_moder_keyboard())
     else:
         context.user_data['admin'] = False
         context.user_data['ref'] = ""
@@ -280,6 +442,57 @@ def main():
             QUESTIONNAIRE_END: [MessageHandler(Filters.text, end_of_questionnaire, pass_user_data=True)],
         },
         fallbacks=[
+            CommandHandler("CANCEL", cancel),
+
+        ],
+    )
+    add_most_people_handler = ConversationHandler(
+        entry_points=[CommandHandler("ADD_MOST_PEOPLE", add_most_people)],
+        states={
+            get_forward_message: [MessageHandler(Filters.text, add_most_people_end, pass_user_data=True)],
+        },
+        fallbacks=[
+            CommandHandler("CANCEL", cancel),
+        ],
+    )
+    change_balance_handler = ConversationHandler(
+        entry_points=[CommandHandler("CHANGE_USER_BALANCE", change_balance)],
+        states={
+            get_balance_id: [MessageHandler(Filters.text, change_balance_id, pass_user_data=True)],
+            get_balance: [MessageHandler(Filters.text, change_balance_end, pass_user_data=True)],
+        },
+        fallbacks=[
+            CommandHandler("CANCEL", cancel),
+
+        ],
+    )
+    change_text_handler = ConversationHandler(
+        entry_points=[CommandHandler("CHANGE_FEEDBACK_TEXT", change_text)],
+        states={
+            get_text: [MessageHandler(Filters.text, change_text_end, pass_user_data=True)],
+        },
+        fallbacks=[
+            CommandHandler("CANCEL", cancel),
+
+        ],
+    )
+    delete_handler = ConversationHandler(
+        entry_points=[CommandHandler("DELETE_MOST_PEOPLE", delete_user)],
+        states={
+            delete: [MessageHandler(Filters.all, delete_user_end, pass_user_data=True)],
+        },
+        fallbacks=[
+            CommandHandler("CANCEL", cancel),
+
+        ],
+    )
+    renewed_subscription = ConversationHandler(
+        entry_points=[CommandHandler("RENEWED_SUBSCRIPTION", renewed_sub)],
+        states={
+            sub: [MessageHandler(Filters.all, renewed_sub_id, pass_user_data=True)],
+            sub_end: [MessageHandler(Filters.all, renewed_sub_end, pass_user_data=True)],
+        },
+        fallbacks=[
             CallbackQueryHandler(key_button_handler, pass_chat_data=True),
 
         ],
@@ -291,6 +504,11 @@ def main():
     buttons_handler = CallbackQueryHandler(callback=key_button_handler, pass_chat_data=True)
     start_handler = CommandHandler("start", start)
     dispatcher.add_handler(questionnaireANDtraining_selection)
+    dispatcher.add_handler(add_most_people_handler)
+    dispatcher.add_handler(change_text_handler)
+    dispatcher.add_handler(delete_handler)
+    dispatcher.add_handler(change_balance_handler)
+    dispatcher.add_handler(renewed_subscription)
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(text_handler)
     dispatcher.add_handler(buttons_handler)
