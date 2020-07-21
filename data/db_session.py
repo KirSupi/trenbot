@@ -31,5 +31,3 @@ def create_session() -> Session:
     global __factory
     return __factory()
 
-
-global_init("db/users.sqlite")
