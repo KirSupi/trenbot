@@ -11,6 +11,7 @@ import time
 import os
 from data.db_session import db_path
 from data.payments import Payment
+from tariffs import tariffs
 
 db_session.global_init(db_path)
 
@@ -27,14 +28,14 @@ def answer_to_question_other(update, context):
                                             " чтобы сильнее вас мотивировать для грядующих тренировок!")
     if context.user_data['kind of training'] == CALLBACK_BUTTON_GAIN_WEIGHT:
         update.effective_message.reply_text("До")
-        update.effective_message.reply_photo(open('src\img\p1.jpg', 'rb'))
+        update.effective_message.reply_photo(open(root_dir + "src/img/p1.jpg", 'rb'))
         update.effective_message.reply_text("После")
-        update.effective_message.reply_photo(open('src\img\p2.jpg', 'rb'))
+        update.effective_message.reply_photo(open(root_dir + "src/img/p2.jpg", 'rb'))
     if context.user_data['kind of training'] == CALLBACK_BUTTON_LOSE_WEIGHT:
         update.effective_message.reply_text("До")
-        update.effective_message.reply_photo(open('src\img\p3.jpg', 'rb'))
+        update.effective_message.reply_photo(open(root_dir + "src/img/p3.jpg", 'rb'))
         update.effective_message.reply_text("После")
-        update.effective_message.reply_photo(open('src\img\p4.jpg', 'rb'))
+        update.effective_message.reply_photo(open(root_dir + "src/img/p4.jpg", 'rb'))
     start_text = "Теперь нужно пройти небольшой опрос," \
                  " чтобы мы подобрали для тебя оптимальный курс тренировок✅)"
     update.effective_message.reply_text(text=start_text)
@@ -160,14 +161,14 @@ def start_training(update, context):
 def get_res_people(update, context, type_training):
     if type_training == BUTTON_GET_WEIGHT:
         update.message.reply_text("До")
-        update.message.reply_photo(open('src\img\p1.jpg', 'rb'))
+        update.message.reply_photo(open(root_dir + "src\img\p1.jpg", 'rb'))
         update.message.reply_text("После")
-        update.message.reply_photo(open('src\img\p2.jpg', 'rb'))
+        update.message.reply_photo(open(root_dir + "src\img\p2.jpg", 'rb'))
     elif type_training == BUTTON_LOSE_WEIGHT:
         update.message.reply_text("До")
-        update.message.reply_photo(open('src\img\p3.jpg', 'rb'))
+        update.message.reply_photo(open(root_dir + "src\img\p3.jpg", 'rb'))
         update.message.reply_text("После")
-        update.message.reply_photo(open('src\img\p4.jpg', 'rb'))
+        update.message.reply_photo(open(root_dir + "src\img\p4.jpg", 'rb'))
 
 
 def make_BONUS(update, context, type_):
@@ -300,16 +301,7 @@ def renewed_sub_id(update, context):
         #     # moder = session.query(Admin).filter(Admin.telegram_id == update.message.forward_from['id']).first()
         #     # session.delete(moder)
         #     # session.commit()
-        update.message.reply_text("Введите набор цыфр для продления подписки")
-        text_ = "1 - день \n" \
-                "2 - месяц \n" \
-                "3 - год \n" \
-                "4 - навсегда \n" \
-                "Первоа цифры - тип множителя. \n" \
-                "Второе число - кол-во. \n" \
-                "___________________ \n" \
-                "Пример: 1230 = 230 дней, 34 = 4 года"
-        update.message.reply_text(text=text_)
+        update.message.reply_text("Введите, на сколько дней продлить подписку:")
         # update.message.reply_text("Типо успешно прошло продление подпски!")
         # update.message.reply_text("Успешно!")
         return sub_end
@@ -319,23 +311,24 @@ def renewed_sub_end(update, context):
     if update.message.text == "/CANCEL":
         update.message.reply_text("Введите любой текст, для вызова меню")
         return ConversationHandler.END
-    code = update.message.text
-    type_ = int(code[0])
-    counts = int(code[1:])
-    info_user = context.user_data['sub']
+    code = int(update.message.text)
     session = db_session.create_session()
-    user = session.query(User).filter(User.telegram_id == info_user.id).first()
-    if type_ == 1:
-        user.date_to_payment += counts * 60 * 60 * 24 * 1
-    elif type_ == 2:
-        user.date_to_payment += counts * 60 * 60 * 24 * 30
-    elif type_ == 3:
-        user.date_to_payment += counts * 60 * 60 * 24 * 30 * 12
-    elif type_ == 4:
-        user.date_to_payment += counts * 60 * 60 * 24 * 30 * 12 * 50
+    user = session.query(User).filter(User.telegram_id == context.user_data['sub'].id).first()
+    time_now = int(time.time())
+    if code == 0:  # т.е. навсегда
+        user.date_to_payment = time_now + tariffs['forever']
+    else:
+        if user.date_to_payment <= time_now:
+            print(user.date_to_payment, time_now)
+            user.date_to_payment = time_now + tariffs['day'] * code
+        else:
+            print(tariffs['day'] * code)
+            print("до", user.date_to_payment)
+            user.date_to_payment += tariffs['day'] * code
+            print("!", user.date_to_payment)
 
     session.commit()
-    update.message.reply_text(f"Успешно! Подписка для {user.name} продлина до {user.date_to_payment}")
+    update.message.reply_text(f"Успешно! Подписка для {user.name} продлина до {time.ctime(user.date_to_payment)}")
     return ConversationHandler.END
 
 
@@ -347,7 +340,7 @@ def take_message(update, context):
     print("forward_from", update.message.forward_from)
     print(update.message.chat_id, group_with_video_id)
     session = db_session.create_session()
-    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id).first()
+    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id, Admin.priority).first()
     session.commit()
     if check_user:
         if check_user.priority == "admin":
@@ -398,7 +391,7 @@ def cancel(update, context):
 
 def start(update, context):
     session = db_session.create_session()
-    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id).first()
+    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id, Admin.priority).first()
     if check_user:
         context.user_data['admin'] = True
         welcome_text = f"Добро пожаловать, {check_user.name}. Вы {check_user.priority}"
