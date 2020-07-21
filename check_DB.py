@@ -1,3 +1,4 @@
+# coding=utf-8
 from data import db_session
 from data.users import User
 from data.admins import Admin

@@ -1,5 +1,5 @@
-from telegram import InlineKeyboardButton, \
-    InlineKeyboardMarkup
+# coding=utf-8
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import KeyboardButton
 from telegram import ReplyKeyboardMarkup
 

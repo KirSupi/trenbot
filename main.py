@@ -1,3 +1,4 @@
+# coding: utf8
 from buttons_and_texts import *
 from bot_configuration import *
 from telegram.ext import CallbackQueryHandler
