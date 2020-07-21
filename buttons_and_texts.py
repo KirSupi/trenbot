@@ -207,20 +207,50 @@ def get_question_other_body_inline_keyboard():
 
 
 # __________________________________ADMIN&MODERNmode____________________________
-
+get_forward_message, get_text, get_balance, get_balance_id, delete = 1, 2, 3, 4, 5
+sub, sub_end = 6, 7
 # ____________ADMIN_MODE___________________{
-BUTTON_ADD_MODER = "Добавить модератора"
-BUTTON_CHANGE_PRIORITY = "Изменить приоритет"
-BUTTON_CHANGE_FEEDBACK_TEXT = "Изменить текст раздела 'О СЕБЕ'"
+BUTTON_ADD = "/ADD_MOST_PEOPLE"
+BUTTON_DELETE = "/DELETE_MOST_PEOPLE"
+BUTTON_CHANGE_FEEDBACK_TEXT = "/CHANGE_FEEDBACK_TEXT"
+BUTTON_RENEWED_SUBSCRIPTION = "/RENEWED_SUBSCRIPTION"
+BUTTON_CHANGE_USER_BALANCE = "/CHANGE_USER_BALANCE"
+BUTTON_CANCEL = "/CANCEL"
+
+
+def get_cancel_keyboard():
+    keyboard = [
+
+        [
+            KeyboardButton(BUTTON_CANCEL),
+        ],
+    ]
+    return ReplyKeyboardMarkup(
+        keyboard=keyboard,
+        resize_keyboard=True,
+    )
+
+
+def get_feedback_text():
+    f = open("feedback.txt", 'r', encoding='utf-8')
+    return f.read()
 
 
 def get_admin_keyboard():
     keyboard = [
 
-        [KeyboardButton(BUTTON_ADD_MODER),
-         KeyboardButton(BUTTON_CHANGE_PRIORITY),
-         KeyboardButton(BUTTON_CHANGE_FEEDBACK_TEXT),
-         ],
+        [
+            KeyboardButton(BUTTON_ADD),
+            KeyboardButton(BUTTON_DELETE),
+
+        ],
+        [
+            KeyboardButton(BUTTON_RENEWED_SUBSCRIPTION),
+            KeyboardButton(BUTTON_CHANGE_USER_BALANCE),
+        ],
+        [
+            KeyboardButton(BUTTON_CHANGE_FEEDBACK_TEXT)
+        ]
     ]
     return ReplyKeyboardMarkup(
         keyboard=keyboard,
