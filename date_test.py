@@ -1,6 +1,7 @@
 import time
 
-print(int(time.time()))
+print('Now:', int(time.time()))
+print(f'1 Day = {60 * 60 * 24}')
 print(f'1 Month = 30 days = {60 * 60 * 24 * 30}')
 print(f'3 Month = 91 days = {60 * 60 * 24 * 90}')
 print(f'1 Year = 365 days = {60 * 60 * 24 * 365}')

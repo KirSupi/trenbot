@@ -3,7 +3,6 @@ import math
 import os
 import random
 import json
-import time
 from pickle import loads, dumps
 from datetime import date
 
@@ -51,6 +50,11 @@ def get_payment():
     return 'ok'
 
 
+@app.route('/test')
+def test():
+    return render_template("base.html")
+
+
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 4040))
-    app.run(host='127.0.0.1', port=port)
+    port = int(os.environ.get("PORT", 80))
+    app.run(host='194.67.86.81', port=port)
