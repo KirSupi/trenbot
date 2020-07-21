@@ -31,3 +31,5 @@ def create_session() -> Session:
     global __factory
     return __factory()
 
+
+db_path = "/var/www/www-root/data/www/diafit.xyz/db/users.sqlite"

@@ -14,11 +14,13 @@ from data.users import User
 from data.payments import Payment
 from flask import Flask, render_template, request
 from tariffs import tariffs
+from data.db_session import db_path
 
 # {
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 # }
-db_session.global_init("db/users.sqlite")
+
+db_session.global_init(db_path)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret_key'

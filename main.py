@@ -8,9 +8,11 @@ from data import db_session
 from data.admins import Admin
 from data.users import User
 import time
+import os
+from data.db_session import db_path
 from data.payments import Payment
 
-db_session.global_init("db/users.sqlite")
+db_session.global_init(db_path)
 
 OTHER_BODY, QUESTIONNAIRE_2, QUESTIONNAIRE_3, QUESTIONNAIRE_4, \
 QUESTIONNAIRE_5, QUESTIONNAIRE_END, OTHER_BODY_QUESTION = range(
