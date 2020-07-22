@@ -340,9 +340,10 @@ def take_message(update, context):
     print("forward_from", update.message.forward_from)
     print(update.message.chat_id, group_with_video_id)
     session = db_session.create_session()
-    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id, Admin.priority).first()
+    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id, Admin.priority != "").first()
     session.commit()
     if check_user:
+        print("@@@")
         if check_user.priority == "admin":
             update.message.reply_text(text="Меню админа", reply_markup=get_admin_keyboard())
         elif check_user.priority == "moder":
@@ -391,13 +392,14 @@ def cancel(update, context):
 
 def start(update, context):
     session = db_session.create_session()
-    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id, Admin.priority).first()
+    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id, Admin.priority != "").first()
+    session.commit()
     if check_user:
         context.user_data['admin'] = True
         welcome_text = f"Добро пожаловать, {check_user.name}. Вы {check_user.priority}"
         update.message.reply_text(text=welcome_text)
-        session.commit()
         if check_user.priority == "admin":
+            print("админка")
             update.message.reply_text(text="Меню админа", reply_markup=get_admin_keyboard())
         elif check_user.priority == "moder":
             update.message.reply_text(text="Меню модератора", reply_markup=get_moder_keyboard())
