@@ -33,6 +33,10 @@ def create_session() -> Session:
 
 
 db_path = "/var/www/www-root/data/www/diafit.xyz/db/users.sqlite"
+
 # for debugging:
 # db_path = "db/users.sqlite"
+
+
+# for debugging: db_path = "db/users.sqlite"
 
