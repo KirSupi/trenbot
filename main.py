@@ -28,14 +28,14 @@ def answer_to_question_other(update, context):
                                             " чтобы сильнее вас мотивировать для грядующих тренировок!")
     if context.user_data['kind of training'] == CALLBACK_BUTTON_GAIN_WEIGHT:
         update.effective_message.reply_text("До")
-        update.effective_message.reply_photo(open(root_dir + "src/img/p1.jpg", 'rb'))
+        update.effective_message.reply_photo(open(root_dir + "/src/img/p1.jpg", 'rb'))
         update.effective_message.reply_text("После")
-        update.effective_message.reply_photo(open(root_dir + "src/img/p2.jpg", 'rb'))
+        update.effective_message.reply_photo(open(root_dir + "/src/img/p2.jpg", 'rb'))
     if context.user_data['kind of training'] == CALLBACK_BUTTON_LOSE_WEIGHT:
         update.effective_message.reply_text("До")
-        update.effective_message.reply_photo(open(root_dir + "src/img/p3.jpg", 'rb'))
+        update.effective_message.reply_photo(open(root_dir + "/src/img/p3.jpg", 'rb'))
         update.effective_message.reply_text("После")
-        update.effective_message.reply_photo(open(root_dir + "src/img/p4.jpg", 'rb'))
+        update.effective_message.reply_photo(open(root_dir + "/src/img/p4.jpg", 'rb'))
     start_text = "Теперь нужно пройти небольшой опрос," \
                  " чтобы мы подобрали для тебя оптимальный курс тренировок✅)"
     update.effective_message.reply_text(text=start_text)
@@ -161,14 +161,14 @@ def start_training(update, context):
 def get_res_people(update, context, type_training):
     if type_training == BUTTON_GET_WEIGHT:
         update.message.reply_text("До")
-        update.message.reply_photo(open(root_dir + "src\img\p1.jpg", 'rb'))
+        update.message.reply_photo(open(root_dir + "/src/img/p1.jpg", 'rb'))
         update.message.reply_text("После")
-        update.message.reply_photo(open(root_dir + "src\img\p2.jpg", 'rb'))
+        update.message.reply_photo(open(root_dir + "/src/img/p2.jpg", 'rb'))
     elif type_training == BUTTON_LOSE_WEIGHT:
         update.message.reply_text("До")
-        update.message.reply_photo(open(root_dir + "src\img\p3.jpg", 'rb'))
+        update.message.reply_photo(open(root_dir + "/src/img/p3.jpg", 'rb'))
         update.message.reply_text("После")
-        update.message.reply_photo(open(root_dir + "src\img\p4.jpg", 'rb'))
+        update.message.reply_photo(open(root_dir + "/src/img/p4.jpg", 'rb'))
 
 
 def make_BONUS(update, context, type_):
