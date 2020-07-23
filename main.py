@@ -118,7 +118,7 @@ def task(context):
     job = context.job
     context.bot.send_message(job.context, text='✅Оптимальный курс тренировок подобран!✅')
     context.bot.send_message(job.context, text=VIDEO_TEXT)
-    context.bot.forward_message(job.context, group_with_video_id, 611)
+    context.bot.forward_message(job.context, group_with_video_id, 717)
     welcome_text = "Меню бота"
     context.bot.send_message(job.context, text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
     return ConversationHandler.END
@@ -132,7 +132,7 @@ def key_button_handler(update, context):
                        " что ты на верном пути и совсем скоро получишь желаемый результат🏃‍♀️"
         context.user_data['kind of training'] = data
         update.effective_message.reply_text(text=context_text)
-        context.bot.forward_message(update.effective_message.chat_id, group_with_video_id, 611)
+        context.bot.forward_message(update.effective_message.chat_id, group_with_video_id, 717)
         update.effective_message.reply_text("какие-то видео", reply_markup=get_next_inline_keyboard())
     if data == CALLBACK_BUTTON_NEXT:
         return throw_question_body(update=update, context=context)
@@ -182,7 +182,7 @@ def make_BONUS(update, context, type_):
         update.message.reply_text(text=f"{current_user.balance}руб.")
     elif type_ == BUTTON_LINK:
         update.message.reply_text(
-            text=f"Ссылка:http://t.me/trenirovki_test228bot?start=871qXoi359ref={update.message.chat_id} \n"
+            text=f"Ссылка:http://t.me/@DiaFit_bot?start=871qXoi359ref={update.message.chat_id} \n"
                  f"Отправив ее знакомым, вы получите бонусные 10р!")
     session.commit()
 
@@ -225,7 +225,7 @@ def delete_user_end(update, context):
             session.commit()
             update.message.reply_text("Успешно!")
         elif admin_moder.priority == "moder":
-            pass
+            session.commit()
         return ConversationHandler.END
 
 
@@ -243,11 +243,6 @@ def change_balance_id(update, context):
     print(update.message.forward_from, "!")
     context.user_data['balance_id'] = update.message.forward_from
     update.message.reply_text(f"Введите новое значение баланса для юзера {context.user_data['balance_id'].first_name}")
-    # user_info =
-    # session = db_session.create_session()
-    # user = session.query(User).filter(User.telegram_id == user_info['id']).first()
-    # user.balance =
-    # session.commit()
     return get_balance
 
 
@@ -266,10 +261,6 @@ def change_balance_end(update, context):
 
 def change_text(update, context):
     update.message.reply_text("Введите новый текст:")
-    # with open("feedback.txt", 'w', encoding='utf-8') as f:
-    #     f.write("my first filen")
-    #     f.write("This filenn")
-    #     f.write("contains three linesn")
     return get_text
 
 
@@ -297,13 +288,7 @@ def renewed_sub_id(update, context):
         return ConversationHandler.END
     else:
         context.user_data['sub'] = update.message.forward_from
-        # if admin_moder.priority == "admin":
-        #     # moder = session.query(Admin).filter(Admin.telegram_id == update.message.forward_from['id']).first()
-        #     # session.delete(moder)
-        #     # session.commit()
         update.message.reply_text("Введите, на сколько дней продлить подписку:")
-        # update.message.reply_text("Типо успешно прошло продление подпски!")
-        # update.message.reply_text("Успешно!")
         return sub_end
 
 
@@ -335,22 +320,21 @@ def renewed_sub_end(update, context):
 # 419453249
 # 419453249
 def take_message(update, context):
-    print("update.message", dir(update.message))
-    print(update.message.from_user)
-    print("forward_from", update.message.forward_from)
-    print(update.message.chat_id, group_with_video_id)
-    session = db_session.create_session()
-    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id, Admin.priority != "").first()
-    session.commit()
-    if check_user:
-        print("@@@")
-        if check_user.priority == "admin":
-            update.message.reply_text(text="Меню админа", reply_markup=get_admin_keyboard())
-        elif check_user.priority == "moder":
-            update.message.reply_text(text="Меню модератора", reply_markup=get_moder_keyboard())
+    # print("update.message", dir(update.message))
+    # print(update.message.from_user)
+    # print("forward_from", update.message.forward_from)
+    # print(update.message.chat_id, group_with_video_id)
+    if str(update.message.chat_id) == str(group_with_video_id):
+        update.message.reply_text(text=f"Видео ID: {update.message.message_id}")
     else:
-        if str(update.message.chat_id) == str(group_with_video_id):
-            update.message.reply_text(text=f"Видео ID: {update.message.message_id}")
+        session = db_session.create_session()
+        check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id, Admin.priority != "").first()
+        session.commit()
+        if check_user:
+            if check_user.priority == "admin":
+                update.message.reply_text(text="Меню админа", reply_markup=get_admin_keyboard())
+            elif check_user.priority == "moder":
+                update.message.reply_text(text="Меню модератора", reply_markup=get_moder_keyboard())
         else:
             if update.message.text == BUTTON_BACK:
                 update.message.reply_text(text="Меню бота", reply_markup=get_main_menu_bot_keyboard())
@@ -391,39 +375,42 @@ def cancel(update, context):
 
 
 def start(update, context):
-    session = db_session.create_session()
-    check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id, Admin.priority != "").first()
-    session.commit()
-    if check_user:
-        context.user_data['admin'] = True
-        welcome_text = f"Добро пожаловать, {check_user.name}. Вы {check_user.priority}"
-        update.message.reply_text(text=welcome_text)
-        if check_user.priority == "admin":
-            print("админка")
-            update.message.reply_text(text="Меню админа", reply_markup=get_admin_keyboard())
-        elif check_user.priority == "moder":
-            update.message.reply_text(text="Меню модератора", reply_markup=get_moder_keyboard())
+    if str(update.message.chat_id) == str(group_with_video_id):
+        update.message.reply_text(text=f"Видео ID: {update.message.message_id}")
     else:
-        context.user_data['admin'] = False
-        context.user_data['ref'] = ""
-        # session = db_session.create_session()
-        if "/start 871qXoi359ref=" in update.message.text:
-            id_boss_ref = update.message.text.split("ref=")[-1]
-            current_user = session.query(User).filter(User.telegram_id == id_boss_ref).first()
-            if current_user and str(update.message.chat_id) not in current_user.referals:
-                current_user.referals_count += 1
-                current_user.referals += f" {id_boss_ref}"
-                current_user.balance += 10
-                session.commit()
-                context.user_data['ref'] = id_boss_ref
+        session = db_session.create_session()
+        check_user = session.query(Admin).filter(Admin.telegram_id == update.message.chat_id, Admin.priority != "").first()
+        session.commit()
+        if check_user:
+            context.user_data['admin'] = True
+            welcome_text = f"Добро пожаловать, {check_user.name}. Вы {check_user.priority}"
+            update.message.reply_text(text=welcome_text)
+            if check_user.priority == "admin":
+                print("админка")
+                update.message.reply_text(text="Меню админа", reply_markup=get_admin_keyboard())
+            elif check_user.priority == "moder":
+                update.message.reply_text(text="Меню модератора", reply_markup=get_moder_keyboard())
         else:
-            if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
-                welcome_text = "Меню бота"
-                update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
+            print("user_data = ref")
+            context.user_data['admin'] = False
+            context.user_data['ref'] = ""
+            # session = db_session.create_session()
+            if "/start 871qXoi359ref=" in update.message.text:
+                id_boss_ref = update.message.text.split("ref=")[-1]
+                current_user = session.query(User).filter(User.telegram_id == id_boss_ref).first()
+                if current_user and str(update.message.chat_id) not in current_user.referals:
+                    current_user.referals_count += 1
+                    current_user.referals += f" {id_boss_ref}"
+                    current_user.balance += 10
+                    session.commit()
+                    context.user_data['ref'] = id_boss_ref
             else:
-                welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
-                update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
-            session.commit()
+                if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
+                    welcome_text = "Меню бота"
+                    update.message.reply_text(text=welcome_text, reply_markup=get_main_menu_bot_keyboard())
+                else:
+                    welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
+                    update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
 
 
 def main():
