@@ -182,7 +182,7 @@ def make_BONUS(update, context, type_):
         update.message.reply_text(text=f"{current_user.balance}руб.")
     elif type_ == BUTTON_LINK:
         update.message.reply_text(
-            text=f"Ссылка:http://t.me/@DiaFit_bot?start=871qXoi359ref={update.message.chat_id} \n"
+            text=f"Ссылка:http://t.me/DiaFit_bot?start=871qXoi359ref={update.message.chat_id} \n"
                  f"Отправив ее знакомым, вы получите бонусные 10р!")
     session.commit()
 
@@ -239,8 +239,6 @@ def change_balance_id(update, context):
     if update.message.text == "/CANCEL":
         update.message.reply_text("Введите любой текст, для вызова меню")
         return ConversationHandler.END
-    print(update.message.text)
-    print(update.message.forward_from, "!")
     context.user_data['balance_id'] = update.message.forward_from
     update.message.reply_text(f"Введите новое значение баланса для юзера {context.user_data['balance_id'].first_name}")
     return get_balance
@@ -304,13 +302,9 @@ def renewed_sub_end(update, context):
         user.date_to_payment = time_now + tariffs['forever']
     else:
         if user.date_to_payment <= time_now:
-            print(user.date_to_payment, time_now)
             user.date_to_payment = time_now + tariffs['day'] * code
         else:
-            print(tariffs['day'] * code)
-            print("до", user.date_to_payment)
             user.date_to_payment += tariffs['day'] * code
-            print("!", user.date_to_payment)
 
     session.commit()
     update.message.reply_text(f"Успешно! Подписка для {user.name} продлина до {time.ctime(user.date_to_payment)}")
@@ -320,10 +314,6 @@ def renewed_sub_end(update, context):
 # 419453249
 # 419453249
 def take_message(update, context):
-    # print("update.message", dir(update.message))
-    # print(update.message.from_user)
-    # print("forward_from", update.message.forward_from)
-    # print(update.message.chat_id, group_with_video_id)
     if str(update.message.chat_id) == str(group_with_video_id):
         update.message.reply_text(text=f"Видео ID: {update.message.message_id}")
     else:
@@ -386,12 +376,10 @@ def start(update, context):
             welcome_text = f"Добро пожаловать, {check_user.name}. Вы {check_user.priority}"
             update.message.reply_text(text=welcome_text)
             if check_user.priority == "admin":
-                print("админка")
                 update.message.reply_text(text="Меню админа", reply_markup=get_admin_keyboard())
             elif check_user.priority == "moder":
                 update.message.reply_text(text="Меню модератора", reply_markup=get_moder_keyboard())
         else:
-            print("user_data = ref")
             context.user_data['admin'] = False
             context.user_data['ref'] = ""
             # session = db_session.create_session()
@@ -400,10 +388,12 @@ def start(update, context):
                 current_user = session.query(User).filter(User.telegram_id == id_boss_ref).first()
                 if current_user and str(update.message.chat_id) not in current_user.referals:
                     current_user.referals_count += 1
-                    current_user.referals += f" {id_boss_ref}"
+                    current_user.referals += f" {update.message.chat_id}"
                     current_user.balance += 10
                     session.commit()
                     context.user_data['ref'] = id_boss_ref
+                    welcome_text = "Привет! Ты на верном пути и теперь ты точно сможешь достигнуть тела своей мечты!🥇"
+                    update.message.reply_text(text=welcome_text, reply_markup=get_base_inline_keyboard())
             else:
                 if session.query(User).filter(User.telegram_id == update.message.chat_id).first():
                     welcome_text = "Меню бота"
