@@ -32,10 +32,10 @@ def create_session() -> Session:
     return __factory()
 
 
-db_path = "/var/www/www-root/data/www/diafit.xyz/db/users.sqlite"
+# db_path = "/var/www/www-root/data/www/diafit.xyz/db/users.sqlite"
 
 # for debugging:
-# db_path = "db/users.sqlite"
+db_path = "db/users.sqlite"
 
 
 # for debugging: db_path = "db/users.sqlite"

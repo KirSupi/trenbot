@@ -4,7 +4,7 @@ import os
 import random
 import json
 from pickle import loads, dumps
-from datetime import date
+from datetime import date, time
 
 import requests
 from werkzeug.utils import redirect

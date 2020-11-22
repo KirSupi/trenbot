@@ -18,12 +18,8 @@ MarkupSafe==1.1.1
 matplotlib==3.2.1
 numpy==1.18.4
 Pillow==7.1.1
-playsound==1.2.2
 pycparser==2.20
-pygame==1.9.6
 pyparsing==2.4.7
-PyQt5==5.13.0
-PyQt5-sip==12.7.0
 # pyqt5-tools==5.13.0.1.5
 # PySide2==5.13.2
 PySocks==1.7.1
